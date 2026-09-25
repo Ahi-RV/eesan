@@ -8,7 +8,7 @@ Stage 1 proves that EESAN can securely connect a **personal Microsoft OneDrive**
 - Read-only Microsoft Graph permissions: `Files.Read` and `User.Read`
 - Server-side encrypted token persistence; no token is exposed to the browser
 - OneDrive connection status, disconnect, health, and recursive PDF discovery APIs
-- Required library layout validation for `/EESAN/Manhole/Duct`, `/EESAN/Manhole/Card`, `/EESAN/SLD`, `/EESAN/Termination`, and `/EESAN/Planmap`
+- Recursive PDF discovery anywhere below the single `/EESAN` library folder
 - A small responsive connection page at `/`
 
 ## Microsoft Entra setup
@@ -38,15 +38,14 @@ Stage 1 proves that EESAN can securely connect a **personal Microsoft OneDrive**
    ```
 4. Open `http://localhost:3000`, choose **Connect OneDrive**, and sign in.
 
-Create this structure in the connected OneDrive before testing (empty folders are fine):
+Create an `EESAN` folder in the connected OneDrive. You can place PDFs directly in it, or organize them in any subfolders you prefer:
 
 ```text
 EESAN/
-├── Manhole/Duct/
-├── Manhole/Card/
-├── SLD/
-├── Termination/
-└── Planmap/
+├── MH-001.pdf
+├── MH-001-card.pdf
+├── MH-001-planmap.pdf
+└── optional-subfolders/
 ```
 
 ## API
@@ -59,7 +58,7 @@ EESAN/
 | POST | `/api/auth/disconnect` | Deletes the local encrypted token for this session |
 | GET | `/api/pdfs` | Recursively lists PDFs in the configured library folders |
 
-`GET /api/pdfs` returns `{ files, folders, missingFolders }`. A missing `EESAN` root produces a helpful `404`; individual library folders may be absent during initial setup and are reported in `missingFolders`.
+`GET /api/pdfs` returns `{ files, folders, missingFolders }`. A missing `EESAN` root produces a helpful `404`; every PDF anywhere inside `/EESAN` is included.
 
 ## Security notes
 
