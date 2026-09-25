@@ -11,23 +11,14 @@ function loadEnv(file = path.join(process.cwd(), '.env')) {
 }
 
 loadEnv();
-const required = ['APP_BASE_URL', 'SESSION_SECRET', 'TOKEN_ENCRYPTION_KEY', 'MICROSOFT_CLIENT_ID', 'MICROSOFT_CLIENT_SECRET', 'MICROSOFT_REDIRECT_URI'];
-
 function config() {
-  const values = Object.fromEntries(required.map((key) => [key, process.env[key]]));
+  const root = process.env.EESAN_ROOT;
   return {
     port: Number(process.env.PORT || 3000),
-    baseUrl: values.APP_BASE_URL || 'http://localhost:3000',
-    sessionSecret: values.SESSION_SECRET,
-    encryptionKey: values.TOKEN_ENCRYPTION_KEY,
-    microsoft: {
-      clientId: values.MICROSOFT_CLIENT_ID,
-      clientSecret: values.MICROSOFT_CLIENT_SECRET,
-      tenant: process.env.MICROSOFT_TENANT || 'consumers',
-      redirectUri: values.MICROSOFT_REDIRECT_URI || 'http://localhost:3000/api/auth/microsoft/callback'
-    },
-    eesAnFolder: process.env.EESAN_FOLDER || 'EESAN',
-    configured: required.every((key) => Boolean(values[key]))
+    baseUrl: process.env.APP_BASE_URL || 'http://localhost:3000',
+    eesAnRoot: root,
+    configured: Boolean(root),
+    rootExists: Boolean(root && fs.existsSync(root) && fs.statSync(root).isDirectory())
   };
 }
 
