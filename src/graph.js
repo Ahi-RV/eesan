@@ -1,6 +1,4 @@
 const GRAPH = 'https://graph.microsoft.com/v1.0';
-const LIBRARY_PATHS = ['Manhole/Duct', 'Manhole/Card', 'SLD', 'Termination', 'Planmap'];
-
 class GraphError extends Error { constructor(message, status = 502) { super(message); this.status = status; } }
 class GraphClient {
   constructor(tokens, oauth) { this.tokens = tokens; this.oauth = oauth; }
@@ -31,16 +29,10 @@ class GraphClient {
   async discoverPdfs(rootName) {
     const root = await this.childByName('root', rootName);
     if (!root) throw new GraphError(`The /${rootName} folder was not found in this OneDrive.`, 404);
-    const folders = []; const missingFolders = []; const files = [];
-    for (const relativePath of LIBRARY_PATHS) {
-      let current = root; let found = true;
-      for (const part of relativePath.split('/')) { current = await this.childByName(current.id, part); if (!current) { found = false; break; } }
-      const fullPath = `/${rootName}/${relativePath}`;
-      if (!found) missingFolders.push(fullPath);
-      else { folders.push(fullPath); files.push(...await this.listDescendants(current, fullPath)); }
-    }
-    return { files, folders, missingFolders };
+    // One central library: optional subfolders are included automatically.
+    const files = await this.listDescendants(root, `/${rootName}`);
+    return { files, folders: [`/${rootName}`], missingFolders: [] };
   }
 }
-module.exports = { GraphClient, GraphError, LIBRARY_PATHS };
+module.exports = { GraphClient, GraphError };
 
