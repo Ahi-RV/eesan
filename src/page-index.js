@@ -46,7 +46,7 @@ class PageIndex {
     const needle = query.toLowerCase(); const state = this.read(); const results = [];
     for (const document of documents) for (const page of state.documents[keyFor(document)]?.pages || []) {
       const position = page.text.toLowerCase().indexOf(needle); if (position < 0) continue;
-      results.push({ projectNumber: document.projectNumber, filename: document.filename, relativePath: document.relativePath, sourceDocumentId: document.sourceDocumentId, pageNumber: page.pageNumber, textSource: page.textSource, matchBox: matchBox(page, query), snippet: page.text.slice(Math.max(0, position - 80), position + needle.length + 120) });
+      results.push({ projectNumber: document.projectNumber, filename: document.filename, relativePath: document.relativePath, sourceDocumentId: document.sourceDocumentId, documentType: document.documentType || 'Project document', pageNumber: page.pageNumber, textSource: page.textSource, matchBox: matchBox(page, query), snippet: page.text.slice(Math.max(0, position - 80), position + needle.length + 120) });
     }
     return results;
   }
