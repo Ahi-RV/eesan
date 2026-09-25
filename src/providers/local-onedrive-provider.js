@@ -17,7 +17,7 @@ class LocalOneDriveProvider {
         else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
           const stat = await fs.stat(absolutePath);
           const relativePath = path.relative(this.rootPath, absolutePath).split(path.sep).join('/');
-          documents.push({ sourceProvider: this.id, sourceDocumentId: relativePath.toLowerCase(), projectNumber: projectNumberFromFilename(entry.name), filename: entry.name, relativePath, size: stat.size, lastModifiedMs: stat.mtimeMs, lastModifiedDateTime: stat.mtime.toISOString() });
+          documents.push({ sourceProvider: this.id, sourceDocumentId: relativePath.toLowerCase(), projectNumber: projectNumberFromFilename(entry.name), filename: entry.name, relativePath, localPath: absolutePath, size: stat.size, lastModifiedMs: stat.mtimeMs, lastModifiedDateTime: stat.mtime.toISOString() });
         }
       }
     };
