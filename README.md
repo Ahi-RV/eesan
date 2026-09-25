@@ -38,14 +38,14 @@ Stage 1 proves that EESAN can securely connect a **personal Microsoft OneDrive**
    ```
 4. Open `http://localhost:3000`, choose **Connect OneDrive**, and sign in.
 
-Create an `EESAN` folder in the connected OneDrive. You can place PDFs directly in it, or organize them in any subfolders you prefer:
+Create an `EESAN` folder in the connected OneDrive. Each PDF represents one project, and the PDF filename is its project number. You can place PDFs directly in the folder or use any subfolders you prefer:
 
 ```text
 EESAN/
-├── MH-001.pdf
-├── MH-001-card.pdf
-├── MH-001-planmap.pdf
-└── optional-subfolders/
+├── PROJECT-10001.pdf
+├── PROJECT-10002.pdf
+└── Archive/
+    └── PROJECT-09001.pdf
 ```
 
 ## API
@@ -70,5 +70,5 @@ EESAN/
 
 ## Stage 2 extension point
 
-`src/graph.js` owns OneDrive traversal. A future `IndexingService` can consume its `{ id, name, path, webUrl, size, lastModifiedDateTime }` file records to download content, extract text, OCR scans, and write a search index without widening permissions.
+`src/graph.js` owns OneDrive traversal and returns a `ProjectDocument` record, including the filename-derived `projectNumber`. Stage 2 will index each page within a project PDF—not the whole PDF as a single drawing type. It first extracts embedded PDF text and only uses OCR for scanned/non-searchable pages. See [the page-level data model](docs/stage-2-index-design.md) and `src/index-model.js`.
 
