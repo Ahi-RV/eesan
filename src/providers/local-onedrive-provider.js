@@ -1,6 +1,6 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { projectNumberFromFilename, documentLabelFromFilename } = require('../index-model');
+const { projectNumberFromFilename, documentLabelFromFilename, documentTypeFromFilename } = require('../index-model');
 
 /** A document-source provider for a locally synced OneDrive directory. */
 class LocalOneDriveProvider {
@@ -17,7 +17,7 @@ class LocalOneDriveProvider {
         else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
           const stat = await fs.stat(absolutePath);
           const relativePath = path.relative(this.rootPath, absolutePath).split(path.sep).join('/');
-          documents.push({ sourceProvider: this.id, sourceDocumentId: relativePath.toLowerCase(), projectNumber: projectNumberFromFilename(entry.name), documentLabel: documentLabelFromFilename(entry.name), filename: entry.name, relativePath, localPath: absolutePath, size: stat.size, lastModifiedMs: stat.mtimeMs, lastModifiedDateTime: stat.mtime.toISOString() });
+          documents.push({ sourceProvider: this.id, sourceDocumentId: relativePath.toLowerCase(), projectNumber: projectNumberFromFilename(entry.name), documentLabel: documentLabelFromFilename(entry.name), documentType: documentTypeFromFilename(entry.name), filename: entry.name, relativePath, localPath: absolutePath, size: stat.size, lastModifiedMs: stat.mtimeMs, lastModifiedDateTime: stat.mtime.toISOString() });
         }
       }
     };
