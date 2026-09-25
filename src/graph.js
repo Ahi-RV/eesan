@@ -1,4 +1,5 @@
 const GRAPH = 'https://graph.microsoft.com/v1.0';
+const { toProjectDocument } = require('./index-model');
 class GraphError extends Error { constructor(message, status = 502) { super(message); this.status = status; } }
 class GraphClient {
   constructor(tokens, oauth) { this.tokens = tokens; this.oauth = oauth; }
@@ -20,7 +21,9 @@ class GraphClient {
       const page = await response.json();
       for (const item of page.value) {
         if (item.folder) files.push(...await this.listDescendants(item, `${displayPath}/${item.name}`));
-        else if (item.file && item.name.toLowerCase().endsWith('.pdf')) files.push({ id: item.id, name: item.name, path: `${displayPath}/${item.name}`, webUrl: item.webUrl, size: item.size, lastModifiedDateTime: item.lastModifiedDateTime });
+        else if (item.file && item.name.toLowerCase().endsWith('.pdf')) {
+          files.push(toProjectDocument({ ...item, path: `${displayPath}/${item.name}` }));
+        }
       }
       next = page['@odata.nextLink'];
     }
