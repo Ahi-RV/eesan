@@ -1,74 +1,66 @@
-# EESAN — Stage 1
+# EESAN — Phase 1, Stage 1
 
-Stage 1 proves that EESAN can securely connect a **personal Microsoft OneDrive** account and discover PDFs in the EESAN library. It deliberately does not download files, extract text, perform OCR, or create an index yet.
+EESAN Stage 1 scans a **locally synced Personal OneDrive folder**. It discovers project PDFs, derives project numbers from filenames, and tracks file changes. It does not connect to Microsoft Graph, download files, extract text, or perform OCR.
 
-## What is included
+## What it does
 
-- Microsoft delegated OAuth 2.0 sign-in for personal Microsoft accounts
-- Read-only Microsoft Graph permissions: `Files.Read` and `User.Read`
-- Server-side encrypted token persistence; no token is exposed to the browser
-- OneDrive connection status, disconnect, health, and recursive PDF discovery APIs
-- Recursive PDF discovery anywhere below the single `/EESAN` library folder
-- A small responsive connection page at `/`
+- Configurable local source folder via `EESAN_ROOT`
+- Recursive discovery of every PDF below that folder, including subfolders
+- One PDF = one project; `PROJECT-10001.pdf` = project `PROJECT-10001`
+- Persistent metadata catalog with added, modified, unchanged, and deleted detection
+- Local-provider abstraction so Microsoft Graph can later be added without changing the page index/search design
+- Health, scan, project-list, and project-lookup APIs
 
-## Microsoft Entra setup
+## Setup
 
-1. Go to [Microsoft Entra app registrations](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) and create a new registration.
-2. Give it a name such as `EESAN Local Development`.
-3. Under **Supported account types**, select **Personal Microsoft accounts only**. (Using `consumers` in `.env` enforces the same choice.)
-4. Add a **Web** redirect URI: `http://localhost:3000/api/auth/microsoft/callback`. It must exactly match `MICROSOFT_REDIRECT_URI`.
-5. Under **API permissions**, add delegated Microsoft Graph permissions `Files.Read` and `User.Read`. Do not add write permissions.
-6. Under **Certificates & secrets**, create a client secret and copy its value now.
-7. Copy the Application (client) ID from the Overview page.
+1. Make sure your personal OneDrive folder is synced to this computer.
+2. Create a folder named `EESAN` inside OneDrive and put a few project PDFs in it:
 
-## Run locally
-
-1. Copy `.env.example` to `.env` and fill in the client ID and secret.
-2. Generate a token encryption key (PowerShell):
-
-   ```powershell
-   [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
+   ```text
+   OneDrive/EESAN/
+   ├── PROJECT-10001.pdf
+   ├── PROJECT-10002.pdf
+   └── Archive/
+       └── PROJECT-09001.pdf
    ```
 
-   Use the output as `TOKEN_ENCRYPTION_KEY`. Set a separate long random `SESSION_SECRET`.
-3. Start the server:
+3. Copy `.env.example` to `.env`.
+4. Set `EESAN_ROOT` to your local folder path. Use forward slashes on Windows:
+
+   ```text
+   EESAN_ROOT=C:/Users/your-windows-username/OneDrive/EESAN
+   ```
+
+5. Start EESAN:
 
    ```powershell
    node src/server.js
    ```
-4. Open `http://localhost:3000`, choose **Connect OneDrive**, and sign in.
 
-Create an `EESAN` folder in the connected OneDrive. Each PDF represents one project, and the PDF filename is its project number. You can place PDFs directly in the folder or use any subfolders you prefer:
-
-```text
-EESAN/
-├── PROJECT-10001.pdf
-├── PROJECT-10002.pdf
-└── Archive/
-    └── PROJECT-09001.pdf
-```
+6. Open `http://localhost:3000` and select **Scan EESAN folder**.
 
 ## API
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| GET | `/api/health` | Liveness and configuration state (never secrets) |
-| GET | `/api/connection-status` | Session-specific OneDrive connection status |
-| GET | `/api/auth/microsoft/login` | Starts Microsoft sign-in |
-| POST | `/api/auth/disconnect` | Deletes the local encrypted token for this session |
-| GET | `/api/pdfs` | Recursively lists PDFs in the configured library folders |
+| GET | `/api/health` | Confirms the server and local source configuration |
+| POST | `/api/scan` | Scans recursively and records additions, changes, and removals |
+| GET | `/api/projects` | Lists active project PDF records |
+| GET | `/api/projects/:projectNumber` | Returns the PDF record(s) for one project number |
+| GET | `/api/pdfs` | Alias for the active project-PDF list |
 
-`GET /api/pdfs` returns `{ files, folders, missingFolders }`. A missing `EESAN` root produces a helpful `404`; every PDF anywhere inside `/EESAN` is included.
+`POST /api/scan` returns counts for `added`, `modified`, `unchanged`, and `deleted`. The metadata catalog is stored in `data/documents.json`, which is excluded from Git. PDFs remain in your OneDrive folder.
+
+## Architecture for later stages
+
+`src/providers/local-onedrive-provider.js` is the current document source. It produces generic project-document records for `src/document-catalog.js`; a future Graph provider can provide the same records.
+
+Stage 2 will create a page-level index for each project PDF. It will extract embedded PDF text first, use OCR only for scanned pages, then later classify and search each page independently. A project PDF is never restricted to one drawing type. See [the page-level index design](docs/stage-2-index-design.md) and [the local source architecture](docs/local-source-architecture.md).
 
 ## Security notes
 
-- Keep `.env` private. It is ignored by Git.
-- Refresh and access tokens are encrypted with AES-256-GCM in `data/sessions.json` and are never returned by an API response.
-- Cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` when `APP_BASE_URL` is HTTPS.
-- OAuth uses state validation, PKCE, and an encrypted server-side session record.
-- For a deployed version, place the app behind HTTPS and replace the JSON session store with a managed database/secret store.
-
-## Stage 2 extension point
-
-`src/graph.js` owns OneDrive traversal and returns a `ProjectDocument` record, including the filename-derived `projectNumber`. Stage 2 will index each page within a project PDF—not the whole PDF as a single drawing type. It first extracts embedded PDF text and only uses OCR for scanned/non-searchable pages. See [the page-level data model](docs/stage-2-index-design.md) and `src/index-model.js`.
+- Keep `.env` private; it is ignored by Git.
+- `EESAN_ROOT` is the only source boundary; symbolic links are skipped.
+- The Stage 1 catalog stores metadata only, not PDF contents.
+- Microsoft Entra, Graph, OAuth, and cloud tokens are not used in this phase.
 
