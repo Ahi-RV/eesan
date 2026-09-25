@@ -1,6 +1,7 @@
 """Extract one JSON record per page; OCR empty pages when optional tools exist."""
 import json, os, shutil, subprocess, sys, tempfile
 from pypdf import PdfReader
+import pdfplumber
 
 pdf_path = sys.argv[1]
 tesseract = os.environ.get("EESAN_TESSERACT")
@@ -20,13 +21,15 @@ def ocr_page(page_number):
 
 reader = PdfReader(pdf_path)
 pages = []
-for number, page in enumerate(reader.pages, start=1):
-    text = (page.extract_text() or "").strip()
-    source = "pdf" if text else "needs_ocr"
-    if not text:
-        text = ocr_page(number) or ""
-        if text: source = "ocr"
-    pages.append({"pageNumber": number, "text": text, "textSource": source})
+with pdfplumber.open(pdf_path) as plumber:
+    for number, (page, visual_page) in enumerate(zip(reader.pages, plumber.pages), start=1):
+        text = (page.extract_text() or "").strip()
+        source = "pdf" if text else "needs_ocr"
+        if not text:
+            text = ocr_page(number) or ""
+            if text: source = "ocr"
+        words = [{"text": word["text"], "x0": word["x0"], "x1": word["x1"], "top": word["top"], "bottom": word["bottom"]} for word in visual_page.extract_words()]
+        pages.append({"pageNumber": number, "text": text, "textSource": source, "pageWidth": visual_page.width, "pageHeight": visual_page.height, "words": words})
 
 print(json.dumps({"pageCount": len(pages), "ocrAvailable": bool(tesseract and pdftoppm), "pages": pages}))
 
