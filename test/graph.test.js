@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-const { projectNumberFromFilename, toProjectDocument } = require('../src/index-model');
+const { projectNumberFromFilename, documentLabelFromFilename, toProjectDocument } = require('../src/index-model');
 const { LocalOneDriveProvider } = require('../src/providers/local-onedrive-provider');
 const { DocumentCatalog } = require('../src/document-catalog');
 test('Stage 1 exposes a local OneDrive source provider', () => {
@@ -12,6 +12,8 @@ test('Stage 1 exposes a local OneDrive source provider', () => {
 test('project number is the PDF filename without its extension', () => {
   assert.equal(projectNumberFromFilename('PROJECT-10001.pdf'), 'PROJECT-10001');
   assert.equal(toProjectDocument({ id: 'drive-id', name: 'PROJECT-10001.pdf', path: '/EESAN/PROJECT-10001.pdf' }).projectNumber, 'PROJECT-10001');
+  assert.equal(projectNumberFromFilename('G.1000.253.07.191.001_Plant Map_1.pdf'), 'G.1000.253.07.191.001');
+  assert.equal(documentLabelFromFilename('G.1000.253.07.191.001_Plant Map_1.pdf'), 'Plant Map_1');
 });
 test('local source detects added, modified, and deleted PDFs', async (t) => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'eesan-test-'));
