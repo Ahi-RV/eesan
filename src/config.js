@@ -17,6 +17,9 @@ function config() {
     port: Number(process.env.PORT || 3000),
     baseUrl: process.env.APP_BASE_URL || 'http://localhost:3000',
     eesAnRoot: root,
+    pythonExe: process.env.EESAN_PYTHON || 'python',
+    tesseractExe: process.env.EESAN_TESSERACT || '',
+    pdftoppmExe: process.env.EESAN_PDFTOPPM || '',
     configured: Boolean(root),
     rootExists: Boolean(root && fs.existsSync(root) && fs.statSync(root).isDirectory())
   };
