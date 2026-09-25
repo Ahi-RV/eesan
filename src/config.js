@@ -1,7 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { appRoot } = require('./app-paths');
 
-function loadEnv(file = path.join(process.cwd(), '.env')) {
+function loadEnv(file = path.join(appRoot, '.env')) {
   if (!fs.existsSync(file)) return;
   for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
     const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
