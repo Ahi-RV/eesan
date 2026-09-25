@@ -1,0 +1,13 @@
+{
+  "name": "eesan-stage-1",
+  "version": "0.1.0",
+  "private": true,
+  "description": "EESAN Stage 1: Microsoft OneDrive authentication and PDF discovery",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=20" }
+}
+
