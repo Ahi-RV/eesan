@@ -15,12 +15,12 @@ Project (PROJECT-10001)
 
 ## Stage 2 indexing flow
 
-1. Discover the Stage 1 `ProjectDocument` record from OneDrive.
+1. Discover the Stage 1 `ProjectDocument` record from the local OneDrive provider.
 2. Download that read-only PDF and create one `document_pages` record per page.
 3. Extract embedded PDF text per page. Use OCR only for pages with missing or insufficient text.
 4. Classify each page independently as Planmap, Duct, Termination, Manhole Card, SLD, or another applicable type. Store zero or more classifications.
 5. Detect and normalize identifiers (such as `MH-101`) and store one `detected_entities` record per occurrence.
-6. Search joins entities, pages, classifications, documents, and projects. A result contains project number, drawing type(s), matching text, and page number.
+6. Stage 2 already supports a basic extracted-text search returning project number, matching text, and page number. Later entity detection will add normalized manhole/cabinet lookup and classifications.
 
 The PDF viewer will use the original document's OneDrive item ID and the indexed `page_number` to open the source document at the result page. Term highlighting can be added when the PDF viewer supports text-layer highlighting; scanned pages will use OCR coordinates where available.
 
