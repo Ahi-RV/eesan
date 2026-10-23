@@ -44,13 +44,19 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/api/search') {
       if (!requireSource(res)) return; const query = (url.searchParams.get('q') || '').trim(); if (!query) return json(res, 400, { error: 'Use /api/search?q=your-search-term' });
-      const results = pageIndex.search(query, catalog.listActive()); return json(res, 200, { query, results, total: results.length });
+      const documentId = (url.searchParams.get('document') || '').toLowerCase(); const documents = documentId ? catalog.listActive().filter((document) => document.sourceDocumentId === documentId) : catalog.listActive();
+      const results = pageIndex.search(query, documents); return json(res, 200, { query, results, total: results.length });
     }
     if (req.method === 'GET' && url.pathname === '/api/page-image') {
       if (!requireSource(res)) return; const documentId = (url.searchParams.get('document') || '').toLowerCase(); const pageNumber = Number(url.searchParams.get('page'));
       const document = catalog.listActive().find((candidate) => candidate.sourceDocumentId === documentId);
       if (!document || !Number.isInteger(pageNumber) || pageNumber < 1) return json(res, 404, { error: 'PDF document or page not found.' });
       const imagePath = await pageRenderer.render(document, pageNumber); res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'private, max-age=3600' }); return fs.createReadStream(imagePath).pipe(res);
+    }
+    if (req.method === 'GET' && url.pathname === '/api/download') {
+      if (!requireSource(res)) return; const documentId = (url.searchParams.get('document') || '').toLowerCase(); const document = catalog.listActive().find((candidate) => candidate.sourceDocumentId === documentId);
+      if (!document) return json(res, 404, { error: 'PDF document not found.' });
+      res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${document.filename.replace(/["\\]/g, '')}"` }); return fs.createReadStream(document.localPath).pipe(res);
     }
     json(res, 404, { error: 'Not found' });
   } catch (error) { console.error(error); json(res, 500, { error: error.message || 'Unable to scan the EESAN library.' }); }
