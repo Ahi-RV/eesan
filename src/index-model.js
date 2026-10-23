@@ -12,12 +12,22 @@ function documentLabelFromFilename(filename) {
   const stem = filename.replace(/\.pdf$/i, '').trim(); const projectNumber = projectNumberFromFilename(filename);
   return stem.slice(projectNumber.length).replace(/^[\s_-]+/, '').trim() || null;
 }
+function documentTypeFromFilename(filename) {
+  const label = (documentLabelFromFilename(filename) || '').toLowerCase();
+  if (label.includes('sld')) return 'SLD';
+  if (label.includes('plan') && label.includes('map')) return 'Planmap';
+  if (label.includes('manhole') && label.includes('card') || label === 'card') return 'MH Card';
+  if (label.includes('duct')) return 'Duct';
+  if (label.includes('termination')) return 'Termination';
+  return 'Project document';
+}
 
 function toProjectDocument(graphItem) {
   return {
     sourceDriveItemId: graphItem.id,
     projectNumber: projectNumberFromFilename(graphItem.name),
     documentLabel: documentLabelFromFilename(graphItem.name),
+    documentType: documentTypeFromFilename(graphItem.name),
     filename: graphItem.name,
     oneDrivePath: graphItem.path,
     webUrl: graphItem.webUrl,
@@ -72,5 +82,5 @@ CREATE TABLE detected_entities (
 CREATE INDEX detected_entities_lookup ON detected_entities(entity_type, normalized_value);
 `;
 
-module.exports = { projectNumberFromFilename, documentLabelFromFilename, toProjectDocument, STAGE_2_SCHEMA };
+module.exports = { projectNumberFromFilename, documentLabelFromFilename, documentTypeFromFilename, toProjectDocument, STAGE_2_SCHEMA };
 
