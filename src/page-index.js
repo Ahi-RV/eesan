@@ -1,18 +1,19 @@
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const { appRoot } = require('./app-paths');
 
 function keyFor(document) { return `${document.sourceProvider}:${document.sourceDocumentId}`; }
 function fingerprint(document) { return `${document.size}:${document.lastModifiedMs}`; }
 class PageIndex {
-  constructor(file = path.join(process.cwd(), 'data', 'page-index.json')) {
+  constructor(file = path.join(appRoot, 'data', 'page-index.json')) {
     this.file = file; fs.mkdirSync(path.dirname(file), { recursive: true });
     if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify({ documents: {} }, null, 2));
   }
   read() { return JSON.parse(fs.readFileSync(this.file, 'utf8')); }
   write(value) { fs.writeFileSync(this.file, JSON.stringify(value)); }
   async extract(document, config) {
-    const script = path.join(process.cwd(), 'scripts', 'extract_pdf_pages.py');
+    const script = path.join(appRoot, 'scripts', 'extract_pdf_pages.py');
     const output = await new Promise((resolve, reject) => {
       const child = spawn(config.pythonExe, [script, document.localPath], { env: { ...process.env, EESAN_TESSERACT: config.tesseractExe || '', EESAN_PDFTOPPM: config.pdftoppmExe || '' } });
       let stdout = ''; let stderr = ''; child.stdout.on('data', (data) => { stdout += data; }); child.stderr.on('data', (data) => { stderr += data; });
