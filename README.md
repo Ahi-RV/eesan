@@ -1,6 +1,6 @@
-# EESAN — Phase 1, Stage 1
+# EESAN — Phase 1, Stage 2
 
-EESAN Stage 1 scans a **locally synced Personal OneDrive folder**. It discovers project PDFs, derives project numbers from filenames, and tracks file changes. It does not connect to Microsoft Graph, download files, extract text, or perform OCR.
+EESAN uses a **locally synced Personal OneDrive folder**. It discovers project PDFs, derives project numbers from filenames, tracks file changes, and extracts text independently from every PDF page.
 
 ## What it does
 
@@ -8,6 +8,8 @@ EESAN Stage 1 scans a **locally synced Personal OneDrive folder**. It discovers 
 - Recursive discovery of every PDF below that folder, including subfolders
 - One PDF = one project; `PROJECT-10001.pdf` = project `PROJECT-10001`
 - Persistent metadata catalog with added, modified, unchanged, and deleted detection
+- Page-level embedded-text extraction and local text search
+- OCR fallback when optional Tesseract and Poppler tools are configured
 - Local-provider abstraction so Microsoft Graph can later be added without changing the page index/search design
 - Health, scan, project-list, and project-lookup APIs
 
@@ -39,6 +41,12 @@ EESAN Stage 1 scans a **locally synced Personal OneDrive folder**. It discovers 
 
 6. Open `http://localhost:3000` and select **Scan EESAN folder**.
 
+## Stage 2 page extraction
+
+Set `EESAN_PYTHON` to a Python 3 executable with the `pypdf` package installed. In this Codex setup it is already configured in your local `.env`. Restart EESAN after changing `.env`, then select **Extract page text**.
+
+Pages containing embedded PDF text are indexed immediately. Pages without usable text are marked `needs_ocr` until you configure both `EESAN_TESSERACT` and `EESAN_PDFTOPPM`. This keeps OCR local; no PDF content is sent to a cloud service.
+
 ## API
 
 | Method | Endpoint | Purpose |
@@ -48,6 +56,8 @@ EESAN Stage 1 scans a **locally synced Personal OneDrive folder**. It discovers 
 | GET | `/api/projects` | Lists active project PDF records |
 | GET | `/api/projects/:projectNumber` | Returns the PDF record(s) for one project number |
 | GET | `/api/pdfs` | Alias for the active project-PDF list |
+| POST | `/api/index` | Extracts and stores page-level text for all PDFs, or one `?project=` |
+| GET | `/api/search?q=MH-101` | Searches indexed page text and returns project and page matches |
 
 `POST /api/scan` returns counts for `added`, `modified`, `unchanged`, and `deleted`. The metadata catalog is stored in `data/documents.json`, which is excluded from Git. PDFs remain in your OneDrive folder.
 
@@ -55,7 +65,7 @@ EESAN Stage 1 scans a **locally synced Personal OneDrive folder**. It discovers 
 
 `src/providers/local-onedrive-provider.js` is the current document source. It produces generic project-document records for `src/document-catalog.js`; a future Graph provider can provide the same records.
 
-Stage 2 will create a page-level index for each project PDF. It will extract embedded PDF text first, use OCR only for scanned pages, then later classify and search each page independently. A project PDF is never restricted to one drawing type. See [the page-level index design](docs/stage-2-index-design.md) and [the local source architecture](docs/local-source-architecture.md).
+Stage 2 creates a page-level index for each project PDF. It extracts embedded PDF text first and uses OCR only for scanned pages. It can now search page text. Later stages will classify and highlight each page independently; a project PDF is never restricted to one drawing type. See [the page-level index design](docs/stage-2-index-design.md) and [the local source architecture](docs/local-source-architecture.md).
 
 ## Security notes
 
