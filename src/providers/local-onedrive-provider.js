@@ -14,10 +14,11 @@ class LocalOneDriveProvider {
         if (entry.isSymbolicLink()) continue;
         const absolutePath = path.join(directory, entry.name);
         if (entry.isDirectory()) await visit(absolutePath);
-        else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
+        else if (entry.isFile() && /\.(?:pdf|jpe?g)$/i.test(entry.name)) {
           const stat = await fs.stat(absolutePath);
           const relativePath = path.relative(this.rootPath, absolutePath).split(path.sep).join('/');
-          documents.push({ sourceProvider: this.id, sourceDocumentId: relativePath.toLowerCase(), projectNumber: projectNumberFromFilename(entry.name), documentLabel: documentLabelFromFilename(entry.name), documentType: documentTypeFromFilename(entry.name), filename: entry.name, relativePath, localPath: absolutePath, size: stat.size, lastModifiedMs: stat.mtimeMs, lastModifiedDateTime: stat.mtime.toISOString() });
+          const extension = path.extname(entry.name).toLowerCase(); const mediaType = extension === '.pdf' ? 'application/pdf' : 'image/jpeg';
+          documents.push({ sourceProvider: this.id, sourceDocumentId: relativePath.toLowerCase(), projectNumber: projectNumberFromFilename(entry.name), documentLabel: documentLabelFromFilename(entry.name), documentType: documentTypeFromFilename(entry.name), filename: entry.name, relativePath, localPath: absolutePath, mediaType, documentKind: extension === '.pdf' ? 'pdf' : 'image', size: stat.size, lastModifiedMs: stat.mtimeMs, lastModifiedDateTime: stat.mtime.toISOString() });
         }
       }
     };
@@ -26,4 +27,3 @@ class LocalOneDriveProvider {
   }
 }
 module.exports = { LocalOneDriveProvider };
-

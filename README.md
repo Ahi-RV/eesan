@@ -1,11 +1,11 @@
 # EESAN — Phase 1, Stage 2
 
-EESAN uses a **locally synced Personal OneDrive folder**. It discovers project PDFs, derives project numbers from filenames, tracks file changes, and extracts text independently from every PDF page.
+EESAN uses a **locally synced Personal OneDrive folder**. It discovers project PDFs plus JPG/JPEG SLD and Manhole Card images, derives project numbers from filenames, tracks file changes, and extracts searchable text independently from every page or image.
 
 ## What it does
 
 - Configurable local source folder via `EESAN_ROOT`
-- Recursive discovery of every PDF below that folder, including subfolders
+- Recursive discovery of every PDF, JPG, and JPEG below that folder, including subfolders
 - One PDF = one project; `PROJECT-10001.pdf` = project `PROJECT-10001`
 - Persistent metadata catalog with added, modified, unchanged, and deleted detection
 - Page-level embedded-text extraction and local text search
@@ -16,10 +16,10 @@ EESAN uses a **locally synced Personal OneDrive folder**. It discovers project P
 ## Setup
 
 1. Make sure your personal OneDrive folder is synced to this computer.
-2. Create a folder named `EESAN` inside OneDrive and put a few project PDFs in it:
+2. Create a folder named `Source` inside OneDrive and put a few project PDFs in it:
 
    ```text
-   OneDrive/EESAN/
+   OneDrive/Source/
    ├── PROJECT-10001.pdf
    ├── PROJECT-10002.pdf
    └── Archive/
@@ -30,7 +30,7 @@ EESAN uses a **locally synced Personal OneDrive folder**. It discovers project P
 4. Set `EESAN_ROOT` to your local folder path. Use forward slashes on Windows:
 
    ```text
-   EESAN_ROOT=C:/Users/your-windows-username/OneDrive/EESAN
+   EESAN_ROOT=C:/Users/your-windows-username/OneDrive/Source
    ```
 
 5. Start EESAN:
@@ -45,7 +45,7 @@ EESAN uses a **locally synced Personal OneDrive folder**. It discovers project P
 
 Set `EESAN_PYTHON` to a Python 3 executable with the `pypdf` package installed. In this Codex setup it is already configured in your local `.env`. Restart EESAN after changing `.env`, then select **Extract page text**.
 
-Pages containing embedded PDF text are indexed immediately. Pages without usable text are marked `needs_ocr` until you configure both `EESAN_TESSERACT` and `EESAN_PDFTOPPM`. This keeps OCR local; no PDF content is sent to a cloud service.
+Pages containing embedded PDF text are indexed immediately. JPG/JPEG files and PDF pages without usable text use local Tesseract OCR. Set `EESAN_TESSERACT` to the installed `tesseract.exe`; scanned PDF OCR additionally uses `EESAN_PDFTOPPM`. Files without an available OCR engine are marked `needs_ocr`. No document content is sent to a cloud service.
 
 ## API
 
@@ -73,4 +73,3 @@ Stage 2 creates a page-level index for each project PDF. It extracts embedded PD
 - `EESAN_ROOT` is the only source boundary; symbolic links are skipped.
 - The Stage 1 catalog stores metadata only, not PDF contents.
 - Microsoft Entra, Graph, OAuth, and cloud tokens are not used in this phase.
-

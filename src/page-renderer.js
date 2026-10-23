@@ -7,6 +7,10 @@ const { appRoot } = require('./app-paths');
 class PageRenderer {
   constructor(pdftoppmExe, cacheDir = path.join(appRoot, 'data', 'page-images')) { this.pdftoppmExe = pdftoppmExe; this.cacheDir = cacheDir; fs.mkdirSync(cacheDir, { recursive: true }); }
   async render(document, pageNumber) {
+    if (document.documentKind === 'image' || /^image\//.test(document.mediaType || '')) {
+      if (pageNumber !== 1) throw new Error('Image documents contain one preview page.');
+      return document.localPath;
+    }
     if (!this.pdftoppmExe) throw new Error('PDF page preview is not configured. Set EESAN_PDFTOPPM in .env.');
     const cacheKey = crypto.createHash('sha256').update(`${document.sourceDocumentId}:${document.lastModifiedMs}:${pageNumber}`).digest('hex');
     const outputBase = path.join(this.cacheDir, cacheKey); const output = `${outputBase}.png`;
@@ -21,4 +25,3 @@ class PageRenderer {
   }
 }
 module.exports = { PageRenderer };
-

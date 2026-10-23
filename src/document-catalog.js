@@ -27,4 +27,3 @@ class DocumentCatalog {
   }
 }
 module.exports = { DocumentCatalog };
-

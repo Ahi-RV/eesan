@@ -23,4 +23,3 @@ Project (PROJECT-10001)
 6. Stage 2 already supports a basic extracted-text search returning project number, matching text, and page number. Later entity detection will add normalized manhole/cabinet lookup and classifications.
 
 The PDF viewer will use the original document's OneDrive item ID and the indexed `page_number` to open the source document at the result page. Term highlighting can be added when the PDF viewer supports text-layer highlighting; scanned pages will use OCR coordinates where available.
-

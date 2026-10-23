@@ -28,4 +28,15 @@ test('local source detects added, modified, and deleted PDFs', async (t) => {
   await fs.rm(pdf);
   assert.equal((await catalog.synchronize(provider)).deleted, 1);
 });
-
+test('local source discovers JPG and JPEG engineering images', async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'eesan-image-test-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.mkdir(path.join(root, 'Manhole Card'));
+  await fs.writeFile(path.join(root, 'Manhole Card', 'MH 62660.JPG'), 'image');
+  await fs.writeFile(path.join(root, 'Manhole Card', 'MH 62661.jpeg'), 'image');
+  const documents = await new LocalOneDriveProvider(root).listProjectDocuments();
+  assert.equal(documents.length, 2);
+  assert.ok(documents.every((document) => document.documentKind === 'image'));
+  assert.ok(documents.every((document) => document.mediaType === 'image/jpeg'));
+  assert.deepEqual(documents.map((document) => document.projectNumber), ['MH 62660', 'MH 62661']);
+});

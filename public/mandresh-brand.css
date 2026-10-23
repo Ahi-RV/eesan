@@ -1,0 +1,20 @@
+.app-shell{grid-template-rows:100px 64px 73px minmax(580px,1fr) 68px}
+.blueprint-header{background:radial-gradient(circle at 66% -20%,#13844f 0,transparent 34%),linear-gradient(110deg,#002c1e,#005138 58%,#003823);border-bottom-color:#099b62}
+.blueprint-header:before{opacity:.38;background:repeating-linear-gradient(0deg,transparent 0 24px,#32d58a1f 25px),repeating-linear-gradient(90deg,transparent 0 45px,#32d58a18 46px),linear-gradient(30deg,transparent 48%,#39bd7d1b 49%,transparent 50%)}
+.brand-lockup{z-index:2;min-width:460px;color:#fff}
+.wordmark{height:58px;display:flex;align-items:baseline;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:800;letter-spacing:1px;filter:drop-shadow(0 3px 2px #000b)}
+.wordmark-major{font-size:54px;line-height:1;background:linear-gradient(180deg,#fff 0,#ffb4b4 12%,#ff3434 30%,#8c0000 67%,#ff3939 85%,#790000 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 1px 0 #ffcbcb,0 0 9px #ff1717,0 0 18px #6f0000}
+.wordmark-minor{font-size:29px;line-height:1;background:linear-gradient(180deg,#fff 0,#e8e8e8 33%,#7c7c7c 68%,#f5f5f5 100%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:0;text-shadow:0 1px 0 #fff8,0 2px 4px #000}
+.brand-lockup p{margin:1px 0 0;color:#f3f7f4;font-size:13px;font-weight:700;letter-spacing:.35px;text-shadow:0 1px 3px #00180e}
+.header-slogan{color:#e9fff4;text-shadow:0 1px 4px #001d10}
+.header-tools button{color:#eafff2}.header-tools .user-control{background:#effff5;color:#07533e}
+.filter-strip{padding:6px 14px}
+.filter-navigation{min-width:0}
+.relationship-nav{display:flex;gap:22px;margin:4px 4px 0;color:#356b59;font-size:11px;font-weight:700}
+.relationship-nav strong{color:#89b6a0;font-size:10px;line-height:15px}
+.relationship-nav b{color:#087a54;font-size:13px}
+.relationship-nav i{color:#749b8b;font-style:normal;padding:0 2px}
+.footer-brand strong{letter-spacing:.5px}
+.footer-major{font-size:25px;background:linear-gradient(#ffb3b3,#fa1414 55%,#800);-webkit-background-clip:text;background-clip:text;color:transparent}
+.footer-minor{font-size:15px;background:linear-gradient(#fff,#9e9e9e,#fff);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:0}
+@media (max-width:1100px){.brand-lockup{min-width:310px}.wordmark-major{font-size:38px}.wordmark-minor{font-size:21px}.brand-lockup p{font-size:11px}.blueprint-rolls{display:none}.header-slogan{right:190px}.relationship-nav{display:none}.app-shell{grid-template-rows:100px 64px 58px minmax(580px,1fr) 68px}}

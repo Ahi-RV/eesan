@@ -10,4 +10,3 @@ LocalOneDriveProvider ──> DocumentCatalog ──> Stage 2 page index
 `LocalOneDriveProvider` supplies project-document records. `DocumentCatalog` persists scan metadata and reports additions, changes, unchanged files, and removals. A future Microsoft Graph provider only needs to provide the same `listProjectDocuments()` method; the catalog and page-level index remain unchanged.
 
 Each project PDF is identified by its source provider plus relative path. Its project number is the filename without `.pdf`.
-

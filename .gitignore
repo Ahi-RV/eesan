@@ -1,4 +1,14 @@
 .env
+.env.*
+!.env.example
 data/
 node_modules/
-
+tmp/
+work/
+outputs/
+Duplicate Bin/
+__pycache__/
+*.pyc
+*.log
+public/assets/mandresh-approved-ui-reference.png
+eesan-green-ui-final.jpg

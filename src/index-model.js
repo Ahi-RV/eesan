@@ -3,13 +3,13 @@
  * ProjectDocument records that can be stored without changing their shape.
  */
 function projectNumberFromFilename(filename) {
-  const stem = filename.replace(/\.pdf$/i, '').trim();
+  const stem = filename.replace(/\.(?:pdf|jpe?g)$/i, '').trim();
   // EESAN project numbers use a leading code such as G.1000.253.07.191.001.
   // Anything following it identifies a document within that project.
   return stem.match(/^[A-Za-z]\.\d{4}\.\d{3}\.\d{2}\.\d{3}\.\d{3}/)?.[0] || stem;
 }
 function documentLabelFromFilename(filename) {
-  const stem = filename.replace(/\.pdf$/i, '').trim(); const projectNumber = projectNumberFromFilename(filename);
+  const stem = filename.replace(/\.(?:pdf|jpe?g)$/i, '').trim(); const projectNumber = projectNumberFromFilename(filename);
   return stem.slice(projectNumber.length).replace(/^[\s_-]+/, '').trim() || null;
 }
 function documentTypeFromFilename(filename) {
@@ -18,7 +18,6 @@ function documentTypeFromFilename(filename) {
   if (label.includes('plan') && label.includes('map')) return 'Planmap';
   if (label.includes('manhole') && label.includes('card') || label === 'card') return 'MH Card';
   if (label.includes('duct')) return 'Duct';
-  if (label.includes('termination')) return 'Termination';
   return 'Project document';
 }
 
@@ -61,6 +60,7 @@ CREATE TABLE document_pages (
   extracted_text TEXT,
   text_source TEXT NOT NULL CHECK (text_source IN ('pdf', 'ocr', 'none')),
   text_indexed_at TEXT,
+  classification_status TEXT NOT NULL DEFAULT 'pending',
   UNIQUE (document_id, page_number)
 );
 CREATE TABLE page_classifications (
@@ -83,4 +83,3 @@ CREATE INDEX detected_entities_lookup ON detected_entities(entity_type, normaliz
 `;
 
 module.exports = { projectNumberFromFilename, documentLabelFromFilename, documentTypeFromFilename, toProjectDocument, STAGE_2_SCHEMA };
-
