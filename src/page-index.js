@@ -4,7 +4,20 @@ const path = require('node:path');
 const { appRoot } = require('./app-paths');
 
 function keyFor(document) { return `${document.sourceProvider}:${document.sourceDocumentId}`; }
-function fingerprint(document) { return `${document.size}:${document.lastModifiedMs}`; }
+function fingerprint(document) { return `positioned-text-v1:${document.size}:${document.lastModifiedMs}`; }
+function normalizedWords(value) { return String(value).toLowerCase().match(/[a-z0-9.]+/g) || []; }
+function matchBox(page, query) {
+  const target = normalizedWords(query); if (!target.length || !page.words?.length) return null;
+  const words = page.words.map((word) => normalizedWords(word.text).join(''));
+  for (let index = 0; index <= words.length - target.length; index += 1) {
+    if (!target.every((word, offset) => words[index + offset] === word)) continue;
+    const matched = page.words.slice(index, index + target.length);
+    const x0 = Math.min(...matched.map((word) => word.x0)); const x1 = Math.max(...matched.map((word) => word.x1));
+    const top = Math.min(...matched.map((word) => word.top)); const bottom = Math.max(...matched.map((word) => word.bottom));
+    return { x0, top, width: x1 - x0, height: bottom - top, pageWidth: page.pageWidth, pageHeight: page.pageHeight };
+  }
+  return null;
+}
 class PageIndex {
   constructor(file = path.join(appRoot, 'data', 'page-index.json')) {
     this.file = file; fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -33,7 +46,7 @@ class PageIndex {
     const needle = query.toLowerCase(); const state = this.read(); const results = [];
     for (const document of documents) for (const page of state.documents[keyFor(document)]?.pages || []) {
       const position = page.text.toLowerCase().indexOf(needle); if (position < 0) continue;
-      results.push({ projectNumber: document.projectNumber, filename: document.filename, relativePath: document.relativePath, sourceDocumentId: document.sourceDocumentId, pageNumber: page.pageNumber, textSource: page.textSource, snippet: page.text.slice(Math.max(0, position - 80), position + needle.length + 120) });
+      results.push({ projectNumber: document.projectNumber, filename: document.filename, relativePath: document.relativePath, sourceDocumentId: document.sourceDocumentId, pageNumber: page.pageNumber, textSource: page.textSource, matchBox: matchBox(page, query), snippet: page.text.slice(Math.max(0, position - 80), position + needle.length + 120) });
     }
     return results;
   }
