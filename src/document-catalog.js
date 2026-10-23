@@ -1,8 +1,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { appRoot } = require('./app-paths');
 
 class DocumentCatalog {
-  constructor(file = path.join(process.cwd(), 'data', 'documents.json')) {
+  constructor(file = path.join(appRoot, 'data', 'documents.json')) {
     this.file = file; fs.mkdirSync(path.dirname(file), { recursive: true });
     if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify({ documents: {} }, null, 2));
   }
