@@ -3,13 +3,21 @@
  * ProjectDocument records that can be stored without changing their shape.
  */
 function projectNumberFromFilename(filename) {
-  return filename.replace(/\.pdf$/i, '').trim();
+  const stem = filename.replace(/\.pdf$/i, '').trim();
+  // EESAN project numbers use a leading code such as G.1000.253.07.191.001.
+  // Anything following it identifies a document within that project.
+  return stem.match(/^[A-Za-z]\.\d{4}\.\d{3}\.\d{2}\.\d{3}\.\d{3}/)?.[0] || stem;
+}
+function documentLabelFromFilename(filename) {
+  const stem = filename.replace(/\.pdf$/i, '').trim(); const projectNumber = projectNumberFromFilename(filename);
+  return stem.slice(projectNumber.length).replace(/^[\s_-]+/, '').trim() || null;
 }
 
 function toProjectDocument(graphItem) {
   return {
     sourceDriveItemId: graphItem.id,
     projectNumber: projectNumberFromFilename(graphItem.name),
+    documentLabel: documentLabelFromFilename(graphItem.name),
     filename: graphItem.name,
     oneDrivePath: graphItem.path,
     webUrl: graphItem.webUrl,
@@ -64,5 +72,5 @@ CREATE TABLE detected_entities (
 CREATE INDEX detected_entities_lookup ON detected_entities(entity_type, normalized_value);
 `;
 
-module.exports = { projectNumberFromFilename, toProjectDocument, STAGE_2_SCHEMA };
+module.exports = { projectNumberFromFilename, documentLabelFromFilename, toProjectDocument, STAGE_2_SCHEMA };
 
